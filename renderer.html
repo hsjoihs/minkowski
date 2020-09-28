@@ -1,4 +1,4 @@
-<body onload="draw()">
+<body>
     <canvas width="1200" height="900" style="border: 1px solid black" id="cv">
 
     </canvas>
@@ -154,17 +154,11 @@
             ctx.clearRect(0, 0, State.width, State.height);
 
             const pointA = new Point(-5, -2);
-            console.log(pointA.x, pointA.y, 316, 445);
             const pointB = new Point(-7, -2);
-            console.log(pointB.x, pointB.y, 37, 364);
             const pointC = new Point(-3, -2);
-            console.log(pointC.x, pointC.y, 595, 526);
             const pointD = new Point(-5, 0);
-            console.log(pointD.x, pointD.y, 235, 166);
             const pointE = new Point(-5, -4);
-            console.log(pointE.x, pointE.y, 397, 724);
             const pointF = new Point(-4.341161616161616, -2.002272727272727);
-            console.log(pointF.x, pointF.y, 408, 472);
 
             render_yellow_segment(ctx, pointB, pointE);
             render_yellow_segment(ctx, pointC, pointE);
@@ -230,6 +224,15 @@
                 ctx.stroke();
             }
 
+        }
+
+        window.onload = () => {
+            document.getElementById("angle").addEventListener('input', (event) => {
+                State.angle = event.target.value - 0; 
+                console.log(`angle changed to ${State.angle}`);
+                draw()
+            }); 
+            draw();
         }
     </script>
 </body>
