@@ -7,13 +7,32 @@
         const WIDTH = 1200;
         const HEIGHT = 900;
 
+        const COEFF1 = 139.5;
+        const COEFF2 = 40.5;
+
+        const OFFSET_X = 932.5;
+        const OFFSET_Y = 368.5;
+
+        // (abs_x, abs_y) = (rel_x cosh 0.5 - rel_y sinh 0.5, rel_y cosh 0.5 - rel_x sinh 0.5)
+
         class Point {
             constructor(rel_x, rel_y) {
                 this.rel_x = rel_x;
                 this.rel_y = rel_y;
             }
-            get x() { return this.rel_x; }
-            get y() { return this.rel_y; }
+            static absolute(x, y) {
+                // x = COEFF1 * this.rel_x - COEFF2 * this.rel_y + OFFSET_X
+                // y = COEFF2 * this.rel_x  -COEFF1 * this.rel_y + OFFSET_Y
+
+                // x + y = (COEFF1+COEFF2) * (this.rel_x - this.rel_y) + (OFFSET_X + OFFSET_Y)
+                // x - y = (COEFF1 - COEFF2) * (this.rel_x + this.rel_y) + (OFFSET_X - OFFSET_Y)
+
+                const rel_x_plus_rel_y = (x - y - (OFFSET_X - OFFSET_Y)) / (COEFF1 - COEFF2);
+                const rel_x_minus_rel_y = (x + y - (OFFSET_X + OFFSET_Y)) / (COEFF1 + COEFF2);
+                return new Point((rel_x_plus_rel_y + rel_x_minus_rel_y) / 2, (rel_x_plus_rel_y - rel_x_minus_rel_y) / 2)
+            }
+            get x() { return COEFF1 * this.rel_x - COEFF2 * this.rel_y + OFFSET_X; }
+            get y() { return COEFF2 * this.rel_x - COEFF1 * this.rel_y + OFFSET_Y; }
         }
         function render_dot(ctx, p1, text, angle) {
             const x = p1.x;
@@ -107,7 +126,7 @@
             function y(x) {
                 return y1 + (x - x1) * (y2 - y1) / (x2 - x1);
             }
-            render_sky_segment(ctx, new Point(0, y(0)), new Point(WIDTH, y(WIDTH)));
+            render_sky_segment(ctx, Point.absolute(0, y(0)), Point.absolute(WIDTH, y(WIDTH)));
         }
 
         function render_purple_line(ctx, p1, p2) {
@@ -118,19 +137,25 @@
             function x(y) {
                 return x1 + (y - y1) * (x2 - x1) / (y2 - y1);
             }
-            render_purple_segment(ctx, new Point(x(0), 0), new Point(x(HEIGHT), HEIGHT));
+            render_purple_segment(ctx, Point.absolute(x(0), 0), Point.absolute(x(HEIGHT), HEIGHT));
         }
 
         function draw() {
             const ctx = document.getElementById('cv').getContext('2d');
 
-            // (X cosh 0.5 - Y sinh 0.5, Y cosh 0.5 - X sinh 0.5)
-            const pointA = new Point(316, 445); // -5, -2
-            const pointB = new Point(37, 364);  // -7, -2
-            const pointC = new Point(595, 526); // -3, -2
-            const pointD = new Point(235, 166); // -5, 0
-            const pointE = new Point(397, 724); // -5, -4
-            const pointF = new Point(408, 472); // 2.5, 4.5
+            
+            const pointA = new Point(-5, -2);
+            console.log(pointA.x, pointA.y, 316, 445);
+            const pointB = new Point(-7, -2);
+            console.log(pointB.x, pointB.y, 37, 364);
+            const pointC = new Point(-3, -2);
+            console.log(pointC.x, pointC.y, 595, 526);
+            const pointD = new Point(-5, 0);
+            console.log(pointD.x, pointD.y, 235, 166);
+            const pointE = new Point(-5, -4);
+            console.log(pointE.x, pointE.y, 397, 724);
+            const pointF = new Point(-4.341161616161616, -2.002272727272727);
+            console.log(pointF.rel_x, pointF.rel_y, 408, 472);
 
             render_yellow_segment(ctx, pointB, pointE);
             render_yellow_segment(ctx, pointC, pointE);
@@ -140,7 +165,7 @@
             render_sky_line(ctx, pointB, pointC);
             render_purple_line(ctx, pointE, pointD);
 
-            render_purple_hyperbola_thru(ctx, pointD, new Point(408, 472), pointE);
+            render_purple_hyperbola_thru(ctx, pointD, pointF, pointE);
 
             render_dot(ctx, pointB, "B");
             render_dot(ctx, pointC, "C");
@@ -148,8 +173,6 @@
             render_dot(ctx, pointE, "E", Math.PI / 2);
             render_dot(ctx, pointD, "D", Math.PI / 4);
             render_dot(ctx, pointF, "F", Math.PI / 4);
-
-
         }
 
         function render_purple_hyperbola_thru(ctx, p1, p2, p3) {
