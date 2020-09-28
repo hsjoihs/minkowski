@@ -1,0 +1,203 @@
+<body onload="draw()">
+    <canvas width="1200" height="900" style="border: 1px solid black" id="cv">
+
+    </canvas>
+
+    <script>
+        const WIDTH = 1200;
+        const HEIGHT = 900;
+
+        class Point {
+            constructor(rel_x, rel_y) {
+                this.rel_x = rel_x;
+                this.rel_y = rel_y;
+            }
+            get x() { return this.rel_x; }
+            get y() { return this.rel_y; }
+        }
+        function render_dot(ctx, p1, text, angle) {
+            const x = p1.x;
+            const y = p1.y;
+            text = text || "";
+            angle = angle || 0;
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(x, y, 9.5, 0, Math.PI * 2)
+            ctx.fill();
+
+            ctx.font = "38px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(text, x + 40 * Math.sin(angle), y - 40 * Math.cos(angle));
+        }
+
+        function render_yellow_segment(ctx, p1, p2) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            if (
+                Math.abs((x1 + y1 - (x2 + y2))) >= 0.01 &&
+                Math.abs((x1 - y1 - (x2 - y2))) >= 0.01
+            ) {
+                alert(`not yellow line!!!!!, ${x1}, ${y1}, ${x2}, ${y2}`);
+            }
+
+            ctx.strokeStyle = "rgb(241, 168, 116)"
+            ctx.lineWidth = 5;
+            ctx.setLineDash([]);
+            ctx.lineCap = "butt";
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function set_purple(ctx) {
+            ctx.strokeStyle = "rgb(139, 125, 189)"
+            ctx.lineWidth = 11;
+            ctx.setLineDash([0, 17]);
+            ctx.lineCap = "round";
+        }
+
+        function render_purple_segment(ctx, p1, p2) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            if ((y2 - y1) * (y2 - y1) <= (x2 - x1) * (x2 - x1)) {
+                alert(`not purple line!!!!!, ${x1}, ${y1}, ${x2}, ${y2}`);
+            }
+
+            set_purple(ctx);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function set_sky(ctx) {
+            ctx.strokeStyle = "rgb(118, 155, 198)"
+            ctx.lineWidth = 5;
+            ctx.setLineDash([27, 12]);
+            ctx.lineCap = "round";
+        }
+
+        function render_sky_segment(ctx, p1, p2) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            if ((y2 - y1) * (y2 - y1) >= (x2 - x1) * (x2 - x1)) {
+                alert(`not sky line!!!!!, ${x1}, ${y1}, ${x2}, ${y2}`);
+            }
+
+            set_sky(ctx);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function render_sky_line(ctx, p1, p2) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            function y(x) {
+                return y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+            }
+            render_sky_segment(ctx, new Point(0, y(0)), new Point(WIDTH, y(WIDTH)));
+        }
+
+        function render_purple_line(ctx, p1, p2) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            function x(y) {
+                return x1 + (y - y1) * (x2 - x1) / (y2 - y1);
+            }
+            render_purple_segment(ctx, new Point(x(0), 0), new Point(x(HEIGHT), HEIGHT));
+        }
+
+        function draw() {
+            const ctx = document.getElementById('cv').getContext('2d');
+
+            // (X cosh 0.5 - Y sinh 0.5, Y cosh 0.5 - X sinh 0.5)
+            const pointA = new Point(316, 445); // -5, -2
+            const pointB = new Point(37, 364);  // -7, -2
+            const pointC = new Point(595, 526); // -3, -2
+            const pointD = new Point(235, 166); // -5, 0
+            const pointE = new Point(397, 724); // -5, -4
+            const pointF = new Point(408, 472); // 2.5, 4.5
+
+            render_yellow_segment(ctx, pointB, pointE);
+            render_yellow_segment(ctx, pointC, pointE);
+            render_yellow_segment(ctx, pointD, pointB);
+            render_yellow_segment(ctx, pointC, pointD);
+
+            render_sky_line(ctx, pointB, pointC);
+            render_purple_line(ctx, pointE, pointD);
+
+            render_purple_hyperbola_thru(ctx, pointD, new Point(408, 472), pointE);
+
+            render_dot(ctx, pointB, "B");
+            render_dot(ctx, pointC, "C");
+            render_dot(ctx, pointA, "A", Math.PI / 4);
+            render_dot(ctx, pointE, "E", Math.PI / 2);
+            render_dot(ctx, pointD, "D", Math.PI / 4);
+            render_dot(ctx, pointF, "F", Math.PI / 4);
+
+
+        }
+
+        function render_purple_hyperbola_thru(ctx, p1, p2, p3) {
+            const x1 = p1.x;
+            const y1 = p1.y;
+            const x2 = p2.x;
+            const y2 = p2.y;
+            const x3 = p3.x;
+            const y3 = p3.y;
+            // Solve:
+            // (y1-b)*(y1-b) = (x1-a)*(x1-a) + c
+            // (y2-b)*(y2-b) = (x2-a)*(x2-a) + c
+            // (y3-b)*(y3-b) = (x3-a)*(x3-a) + c
+
+            const D = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+            const a = ((x1 * x1 - x3 * x3) * (y2 - y1) + (y3 - y2) * (y2 - y1) * (y3 - y1) + (x2 * x2 - x1 * x1) * (y3 - y1)) / (2 * D);
+            const b = -((y1 * y1 - y3 * y3) * (x2 - x1) + (x3 - x2) * (x2 - x1) * (x3 - x1) + (y2 * y2 - y1 * y1) * (x3 - x1)) / (2 * D);
+
+            const c = (y1 - b) * (y1 - b) - (x1 - a) * (x1 - a);
+
+            {
+                const f = y => a + Math.sqrt((y - b) * (y - b) - c);
+
+                let y = 0;
+
+                set_purple(ctx);
+                ctx.beginPath();
+                ctx.moveTo(f(y), y);
+                for (y = 1; y <= HEIGHT; y += 1) {
+                    ctx.lineTo(f(y), y);
+                }
+                ctx.stroke();
+            }
+
+            {
+                const f = y => a - Math.sqrt((y - b) * (y - b) - c);
+
+                let y = 0;
+
+                set_purple(ctx);
+                ctx.beginPath();
+                ctx.moveTo(f(y), y);
+                for (y = 1; y <= HEIGHT; y += 1) {
+                    ctx.lineTo(f(y), y);
+                }
+                ctx.stroke();
+            }
+
+        }
+    </script>
+</body>
