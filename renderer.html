@@ -1,5 +1,5 @@
 <body>
-    <canvas width="1200" height="900" style="border: 1px solid black" id="cv">
+    <canvas width="1200" height="900" style="border: 1px solid black; cursor: grab" id="cv">
 
     </canvas>
     <div style="font-size: 48px;">
@@ -228,11 +228,46 @@
 
         window.onload = () => {
             document.getElementById("angle").addEventListener('input', (event) => {
-                State.angle = event.target.value - 0; 
+                State.angle = event.target.value - 0;
                 console.log(`angle changed to ${State.angle}`);
                 draw()
-            }); 
+            });
             draw();
+
+            const ball = document.getElementById('cv');
+
+            ball.onmousedown = function (event) {
+                let initialX = event.pageX;
+                let initialY = event.pageY;
+                function moveAt(pageX, pageY) {
+                    console.log(pageX, pageY);
+                    State.offset_x += pageX - initialX;
+                    State.offset_y += pageY - initialY;
+                    initialX = pageX;
+                    initialY = pageY;
+                    draw();
+                }
+
+                moveAt(event.pageX, event.pageY);
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+
+                ball.onmouseup = function () {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    ball.onmouseup = null;
+                };
+
+            };
+
+            ball.ondragstart = function () {
+                return false;
+            };
         }
+
+
     </script>
 </body>
