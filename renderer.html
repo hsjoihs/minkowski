@@ -237,14 +237,13 @@
             const ball = document.getElementById('cv');
 
             ball.onmousedown = function (event) {
-                let initialX = event.pageX;
-                let initialY = event.pageY;
+                let old_x = event.pageX;
+                let old_y = event.pageY;
                 function moveAt(pageX, pageY) {
-                    console.log(pageX, pageY);
-                    State.offset_x += pageX - initialX;
-                    State.offset_y += pageY - initialY;
-                    initialX = pageX;
-                    initialY = pageY;
+                    State.offset_x += pageX - old_x;
+                    State.offset_y += pageY - old_y;
+                    old_x = pageX;
+                    old_y = pageY;
                     draw();
                 }
 
